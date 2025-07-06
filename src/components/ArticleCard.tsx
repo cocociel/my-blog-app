@@ -2,6 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Article } from '../lib/supabase'
 import { Calendar, Eye, Heart, Tag } from 'lucide-react'
+import LazyImage from './LazyImage'
+import { getOptimizedImageUrl } from '../utils/performance'
 
 interface ArticleCardProps {
   article: Article
@@ -16,13 +18,31 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
     })
   }
 
+  // 記事のサムネイル画像を生成（実際の実装では記事にimage_urlフィールドを追加することを推奨）
+  const thumbnailUrl = getOptimizedImageUrl(
+    'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg',
+    400,
+    250
+  )
+
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+    <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+      {/* サムネイル画像 */}
+      <div className="h-48 overflow-hidden">
+        <LazyImage
+          src={thumbnailUrl}
+          alt={article.title}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+        />
+      </div>
+
       <div className="p-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center text-sm text-gray-500">
             <Calendar className="w-4 h-4 mr-1" />
-            <span>{formatDate(article.published_at || article.created_at)}</span>
+            <time dateTime={article.published_at || article.created_at}>
+              {formatDate(article.published_at || article.created_at)}
+            </time>
           </div>
           <div className="flex items-center space-x-4 text-sm text-gray-500">
             <div className="flex items-center">
@@ -37,7 +57,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         </div>
         
         <Link to={`/blog/${article.id}`} className="block group">
-          <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+          <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
             {article.title}
           </h3>
           <p className="text-gray-600 text-sm mb-4 line-clamp-3">
@@ -67,7 +87,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           </Link>
         </div>
       </div>
-    </div>
+    </article>
   )
 }
 

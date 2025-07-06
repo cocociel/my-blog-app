@@ -1,17 +1,21 @@
 import React from 'react'
 import { Member } from '../lib/supabase'
 import { Calendar, MapPin, Heart } from 'lucide-react'
+import LazyImage from './LazyImage'
+import { getOptimizedImageUrl } from '../utils/performance'
 
 interface MemberCardProps {
   member: Member
 }
 
 const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
+  const optimizedImageUrl = getOptimizedImageUrl(member.profile_image_url, 300, 300)
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
       <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-        <img
-          src={member.profile_image_url}
+        <LazyImage
+          src={optimizedImageUrl}
           alt={member.name}
           className="w-full h-full object-cover"
         />

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { supabase, Article, Member } from '../lib/supabase'
 import ArticleCard from '../components/ArticleCard'
 import MemberCard from '../components/MemberCard'
+import SEOHead from '../components/SEOHead'
+import LazyImage from '../components/LazyImage'
 import { BookOpen, Users, TrendingUp, Calendar } from 'lucide-react'
 
 const HomePage = () => {
@@ -79,6 +81,13 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead
+        title="Shiki∞Link - 推しと学ぶモダンなWEB技術"
+        description="AIアイドル「Shiki∞Link」と一緒に、TypeScriptやReact、Web技術を楽しく学びませんか？技術記事から推しの魅力まで、あなたの学習をサポートします！"
+        keywords={['TypeScript', 'React', 'Web技術', 'アイドル', '技術ブログ', '学習', 'Shiki∞Link']}
+        type="website"
+      />
+
       {/* ヒーローセクション */}
       <section className="bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

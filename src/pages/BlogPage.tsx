@@ -1,75 +1,108 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase, Article, Category } from '../lib/supabase'
+import { supabase, Article } from '../lib/supabase'
 import ArticleCard from '../components/ArticleCard'
-import { Search, Filter, BookOpen } from 'lucide-react'
+import SearchFiltersComponent, { SearchFilters } from '../components/SearchFilters'
+import SEOHead from '../components/SEOHead'
+import { useDebounce } from '../hooks/useDebounce'
+import { BookOpen } from 'lucide-react'
 
 const BlogPage = () => {
   const [articles, setArticles] = useState<Article[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [currentFilters, setCurrentFilters] = useState<SearchFilters>({
+    searchTerm: '',
+    selectedCategories: [],
+    dateRange: { start: '', end: '' },
+    sortBy: 'newest'
+  })
+  const articlesPerPage = 9
+
+  // 検索語句のデバウンス
+  const debouncedSearchTerm = useDebounce(currentFilters.searchTerm, 300)
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchArticles(currentFilters, 1)
+  }, [debouncedSearchTerm, currentFilters.selectedCategories, currentFilters.dateRange, currentFilters.sortBy])
 
-  useEffect(() => {
-    filterArticles()
-  }, [selectedCategory, searchTerm])
-
-  const fetchData = async () => {
+  const fetchArticles = async (filters: SearchFilters, page = 1) => {
+    setLoading(true)
     try {
-      // 記事を取得
-      const { data: articlesData } = await supabase
+      let query = supabase
         .from('articles')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('status', 'published')
-        .order('published_at', { ascending: false })
 
-      // カテゴリを取得
-      const { data: categoriesData } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name')
+      // 検索フィルタ
+      if (filters.searchTerm) {
+        query = query.or(`title.ilike.%${filters.searchTerm}%,content.ilike.%${filters.searchTerm}%`)
+      }
 
-      if (articlesData) setArticles(articlesData)
-      if (categoriesData) setCategories(categoriesData)
+      // カテゴリフィルタ（複数選択対応）
+      if (filters.selectedCategories.length > 0) {
+        const categoryConditions = filters.selectedCategories.map(category => 
+          `category_tags.cs.["${category}"]`
+        ).join(',')
+        query = query.or(categoryConditions)
+      }
+
+      // 日付範囲フィルタ
+      if (filters.dateRange.start) {
+        query = query.gte('published_at', filters.dateRange.start)
+      }
+      if (filters.dateRange.end) {
+        query = query.lte('published_at', filters.dateRange.end + 'T23:59:59')
+      }
+
+      // ソート
+      switch (filters.sortBy) {
+        case 'oldest':
+          query = query.order('published_at', { ascending: true })
+          break
+        case 'most_liked':
+          query = query.order('like_count', { ascending: false })
+          break
+        case 'most_viewed':
+          query = query.order('view_count', { ascending: false })
+          break
+        default: // newest
+          query = query.order('published_at', { ascending: false })
+      }
+
+      // ページネーション
+      const from = (page - 1) * articlesPerPage
+      const to = from + articlesPerPage - 1
+      query = query.range(from, to)
+
+      const { data, count, error } = await query
+
+      if (error) throw error
+
+      if (data) {
+        setArticles(data)
+        setTotalPages(Math.ceil((count || 0) / articlesPerPage))
+        setCurrentPage(page)
+      }
     } catch (error) {
-      console.error('データの取得に失敗しました:', error)
+      console.error('記事の取得に失敗しました:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const filterArticles = async () => {
-    try {
-      let query = supabase
-        .from('articles')
-        .select('*')
-        .eq('status', 'published')
-
-      // カテゴリフィルタ
-      if (selectedCategory !== 'all') {
-        query = query.contains('category_tags', [selectedCategory])
-      }
-
-      // 検索フィルタ
-      if (searchTerm) {
-        query = query.or(`title.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
-      }
-
-      query = query.order('published_at', { ascending: false })
-
-      const { data } = await query
-      if (data) setArticles(data)
-    } catch (error) {
-      console.error('フィルタリングに失敗しました:', error)
-    }
+  const handleFiltersChange = (filters: SearchFilters) => {
+    setCurrentFilters(filters)
+    setCurrentPage(1)
   }
 
-  if (loading) {
+  const handlePageChange = (page: number) => {
+    fetchArticles(currentFilters, page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (loading && articles.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -82,6 +115,12 @@ const BlogPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead
+        title="技術ブログ"
+        description="Shiki∞Linkメンバーが書いた技術記事で、一緒に学びませんか？TypeScript、React、Web技術の記事を多数掲載しています。"
+        keywords={['技術ブログ', 'TypeScript', 'React', 'Web技術', 'プログラミング', '学習']}
+      />
+
       {/* ヘッダー */}
       <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -98,43 +137,20 @@ const BlogPage = () => {
       </section>
 
       {/* 検索とフィルタ */}
-      <section className="py-8 bg-white border-b border-gray-200">
+      <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="記事を検索..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Filter className="text-gray-400 w-5 h-5" />
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">すべてのカテゴリ</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <SearchFiltersComponent onFiltersChange={handleFiltersChange} />
         </div>
       </section>
 
       {/* 記事一覧 */}
-      <section className="py-16">
+      <section className="pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {articles.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : articles.length === 0 ? (
             <div className="text-center py-16">
               <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -145,11 +161,63 @@ const BlogPage = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {articles.map((article) => (
-                <ArticleCard key={article.id} article={article} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                {articles.map((article) => (
+                  <ArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+
+              {/* ページネーション */}
+              {totalPages > 1 && (
+                <div className="flex justify-center">
+                  <nav className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      前へ
+                    </button>
+                    
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                      let page;
+                      if (totalPages <= 5) {
+                        page = i + 1;
+                      } else if (currentPage <= 3) {
+                        page = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        page = totalPages - 4 + i;
+                      } else {
+                        page = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                    
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      次へ
+                    </button>
+                  </nav>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

@@ -3,13 +3,16 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase, Article } from '../lib/supabase'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Calendar, Eye, Heart, ArrowLeft, Tag, Share2 } from 'lucide-react'
+import { Calendar, Eye, ArrowLeft, Tag } from 'lucide-react'
+import CommentSection from '../components/CommentSection'
+import LikeButton from '../components/LikeButton'
+import ShareButtons from '../components/ShareButtons'
+import SEOHead from '../components/SEOHead'
 
 const BlogDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const [article, setArticle] = useState<Article | null>(null)
   const [loading, setLoading] = useState(true)
-  const [liked, setLiked] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -56,19 +59,9 @@ const BlogDetailPage = () => {
     }
   }
 
-  const handleLike = async () => {
-    if (!article || liked) return
-
-    try {
-      await supabase
-        .from('articles')
-        .update({ like_count: article.like_count + 1 })
-        .eq('id', article.id)
-
-      setArticle({ ...article, like_count: article.like_count + 1 })
-      setLiked(true)
-    } catch (error) {
-      console.error('いいねの更新に失敗しました:', error)
+  const handleLikeChange = (newCount: number) => {
+    if (article) {
+      setArticle({ ...article, like_count: newCount })
     }
   }
 
@@ -109,8 +102,24 @@ const BlogDetailPage = () => {
     )
   }
 
+  const currentUrl = window.location.href
+  const publishedTime = article.published_at || article.created_at
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead
+        title={article.title}
+        description={article.excerpt || article.content.substring(0, 160)}
+        keywords={article.category_tags}
+        type="article"
+        publishedTime={publishedTime}
+        modifiedTime={article.updated_at}
+        author="Shiki∞Link"
+        section="技術記事"
+        tags={article.category_tags}
+        url={currentUrl}
+      />
+
       <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 戻るボタン */}
         <Link
@@ -131,36 +140,26 @@ const BlogDetailPage = () => {
             <div className="flex items-center space-x-6 text-sm text-gray-500">
               <div className="flex items-center">
                 <Calendar className="w-4 h-4 mr-1" />
-                <span>{formatDate(article.published_at || article.created_at)}</span>
+                <span>{formatDate(publishedTime)}</span>
               </div>
               <div className="flex items-center">
                 <Eye className="w-4 h-4 mr-1" />
                 <span>{article.view_count} 閲覧</span>
               </div>
-              <div className="flex items-center">
-                <Heart className="w-4 h-4 mr-1" />
-                <span>{article.like_count} いいね</span>
-              </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <button
-                onClick={handleLike}
-                disabled={liked}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
-                  liked 
-                    ? 'bg-pink-100 text-pink-600 cursor-not-allowed' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-pink-100 hover:text-pink-600'
-                }`}
-              >
-                <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} />
-                <span>{liked ? 'いいねしました' : 'いいね'}</span>
-              </button>
+              <LikeButton
+                articleId={article.id}
+                initialLikeCount={article.like_count}
+                onLikeChange={handleLikeChange}
+              />
               
-              <button className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-full hover:bg-blue-100 hover:text-blue-600 transition-colors">
-                <Share2 className="w-4 h-4" />
-                <span>シェア</span>
-              </button>
+              <ShareButtons
+                url={currentUrl}
+                title={article.title}
+                description={article.excerpt}
+              />
             </div>
           </div>
           
@@ -238,6 +237,9 @@ const BlogDetailPage = () => {
             </ReactMarkdown>
           </div>
         </div>
+
+        {/* コメントセクション */}
+        <CommentSection articleId={article.id} />
       </article>
     </div>
   )

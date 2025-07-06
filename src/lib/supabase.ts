@@ -44,3 +44,35 @@ export interface Category {
   color: string
   created_at: string
 }
+
+export interface Comment {
+  id: string
+  article_id: string
+  parent_id?: string
+  author_name: string
+  email: string
+  content: string
+  status: 'pending' | 'approved' | 'rejected'
+  created_at: string
+  updated_at: string
+  replies?: Comment[]
+}
+
+export interface Like {
+  id: string
+  article_id: string
+  ip_address: string
+  created_at: string
+}
+
+// ユーティリティ関数
+export const getClientIP = async (): Promise<string> => {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json')
+    const data = await response.json()
+    return data.ip
+  } catch (error) {
+    console.error('IP取得エラー:', error)
+    return 'unknown'
+  }
+}

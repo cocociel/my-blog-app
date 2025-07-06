@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://your-domain.com/sitemap.xml
+
+# 管理画面は除外
+Disallow: /admin
+
+# 検索エンジン向けの推奨設定
+Crawl-delay: 1

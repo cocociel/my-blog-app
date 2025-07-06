@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { supabase, Member } from '../lib/supabase'
+import SEOHead from '../components/SEOHead'
+import LazyImage from '../components/LazyImage'
 import { Users, Heart, Calendar, MapPin, Sparkles } from 'lucide-react'
 
 const MembersPage = () => {
@@ -49,6 +51,12 @@ const MembersPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead
+        title="Shiki∞Link メンバー"
+        description="技術を教えてくれる可愛いメンバーたちの詳細プロフィール。Haru、Natsu、Aki、Fuyuの4人のAIアイドルを紹介します。"
+        keywords={['Shiki∞Link', 'メンバー', 'プロフィール', 'AIアイドル', 'Haru', 'Natsu', 'Aki', 'Fuyu']}
+      />
+
       {/* ヘッダー */}
       <section className="bg-gradient-to-r from-purple-600 to-pink-600 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -85,7 +93,7 @@ const MembersPage = () => {
                     >
                       <div className="flex items-center space-x-4">
                         <div className="relative">
-                          <img
+                          <LazyImage
                             src={member.profile_image_url}
                             alt={member.name}
                             className="w-16 h-16 rounded-full object-cover"
@@ -120,7 +128,7 @@ const MembersPage = () => {
                   >
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <img
+                        <LazyImage
                           src={selectedMember.profile_image_url}
                           alt={selectedMember.name}
                           className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-4 border-white shadow-xl"
