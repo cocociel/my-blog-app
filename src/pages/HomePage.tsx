@@ -45,14 +45,14 @@ const HomePage = () => {
 
       if (articlesData) setArticles(articlesData)
       if (membersData) setMembers(membersData)
-      
+
       if (allArticles) {
         const totalViews = allArticles.reduce((sum, article) => sum + article.view_count, 0)
         const thisMonth = allArticles.filter(article => {
           const publishedDate = new Date(article.published_at)
           const now = new Date()
-          return publishedDate.getMonth() === now.getMonth() && 
-                 publishedDate.getFullYear() === now.getFullYear()
+          return publishedDate.getMonth() === now.getMonth() &&
+            publishedDate.getFullYear() === now.getFullYear()
         }).length
 
         setStats({
@@ -99,7 +99,7 @@ const HomePage = () => {
               </span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              AIアイドル「Shiki∞Link」と一緒に、TypeScriptやReact、Web技術を楽しく学びませんか？
+              AIアイドル「Shiki∞Link」と一緒に、TypeScriptやReact、Web技術を楽しく学びませんか？<br />
               技術記事から推しの魅力まで、あなたの学習をサポートします！
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -154,13 +154,13 @@ const HomePage = () => {
               メンバーたちが書いた最新の技術記事をチェックしよう！
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {articles.map((article) => (
               <ArticleCard key={article.id} article={article} />
             ))}
           </div>
-          
+
           <div className="text-center">
             <Link
               to="/blog"
@@ -184,13 +184,13 @@ const HomePage = () => {
               技術を教えてくれる可愛いメンバーたちを紹介します！
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {members.map((member) => (
               <MemberCard key={member.id} member={member} />
             ))}
           </div>
-          
+
           <div className="text-center">
             <Link
               to="/members"

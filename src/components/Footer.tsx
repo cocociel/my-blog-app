@@ -14,7 +14,7 @@ const Footer = () => {
               <h3 className="text-lg font-bold text-gray-900">Shiki∞Link</h3>
             </div>
             <p className="text-gray-600 mb-4">
-              AI生成したアイドルを題材にTypeScriptやWeb技術を学ぶブログサイトです。
+              AI生成したアイドルを題材にTypeScriptやWeb技術を学ぶブログサイトです。<br />
               技術を楽しく学んで、一緒に成長していきましょう！
             </p>
             <div className="flex space-x-4">
@@ -26,18 +26,18 @@ const Footer = () => {
               </a>
             </div>
           </div>
-          
+
           <div>
             <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
               コンテンツ
             </h4>
             <ul className="space-y-2">
-              <li><a href="/blog" className="text-gray-600 hover:text-gray-900 transition-colors">ブログ記事</a></li>
+              <li><a href="/blog" className="text-gray-600 hover:text-gray-900 transition-colors">技術ブログ</a></li>
+              {/* <li><a href="" className="text-gray-600 hover:text-gray-900 transition-colors">ブログ記事</a></li> */}
               <li><a href="/members" className="text-gray-600 hover:text-gray-900 transition-colors">メンバー紹介</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">技術記事</a></li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
               その他
@@ -49,7 +49,7 @@ const Footer = () => {
             </ul>
           </div>
         </div>
-        
+
         <div className="mt-8 pt-8 border-t border-gray-200">
           <p className="text-center text-gray-600 text-sm">
             © 2024 Shiki∞Link. All rights reserved.

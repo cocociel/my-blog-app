@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { supabase, Member } from '../lib/supabase'
 import SEOHead from '../components/SEOHead'
 import LazyImage from '../components/LazyImage'
-import { Users, Heart, Calendar, MapPin, Sparkles } from 'lucide-react'
+import { Users, Heart, Calendar, MapPin, Sparkles, Smile } from 'lucide-react'
 
 const MembersPage = () => {
   const [members, setMembers] = useState<Member[]>([])
@@ -85,11 +85,10 @@ const MembersPage = () => {
                     <button
                       key={member.id}
                       onClick={() => setSelectedMember(member)}
-                      className={`w-full text-left p-4 rounded-xl transition-all duration-300 ${
-                        selectedMember?.id === member.id
-                          ? 'bg-white shadow-lg border-2 border-gray-200 transform scale-105'
-                          : 'bg-white shadow-md hover:shadow-lg hover:scale-102'
-                      }`}
+                      className={`w-full text-left p-4 rounded-xl transition-all duration-300 ${selectedMember?.id === member.id
+                        ? 'bg-white shadow-lg border-2 border-gray-200 transform scale-105'
+                        : 'bg-white shadow-md hover:shadow-lg hover:scale-102'
+                        }`}
                     >
                       <div className="flex items-center space-x-4">
                         <div className="relative">
@@ -98,7 +97,7 @@ const MembersPage = () => {
                             alt={member.name}
                             className="w-16 h-16 rounded-full object-cover"
                           />
-                          <div 
+                          <div
                             className="absolute -top-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-sm"
                             style={{ backgroundColor: member.image_color }}
                           />
@@ -120,7 +119,7 @@ const MembersPage = () => {
               {selectedMember && (
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                   {/* プロフィール画像とヘッダー */}
-                  <div 
+                  <div
                     className="h-64 bg-gradient-to-br from-opacity-20 to-opacity-40 relative"
                     style={{
                       background: `linear-gradient(135deg, ${selectedMember.image_color}20, ${selectedMember.image_color}40)`
@@ -140,7 +139,7 @@ const MembersPage = () => {
                           {selectedMember.nickname}
                         </p>
                         <div className="flex items-center justify-center">
-                          <div 
+                          <div
                             className="w-4 h-4 rounded-full mr-2"
                             style={{ backgroundColor: selectedMember.image_color }}
                           />
@@ -178,7 +177,7 @@ const MembersPage = () => {
                     {/* キャッチフレーズ */}
                     <div className="mb-8">
                       <div className="flex items-center space-x-2 mb-3">
-                        <Sparkles className="w-5 h-5 text-yellow-500" />
+                        <Sparkles className="w-5 h-5 text-blue-500" />
                         <h3 className="text-lg font-semibold text-gray-900">
                           キャッチフレーズ
                         </h3>
@@ -190,9 +189,12 @@ const MembersPage = () => {
 
                     {/* 性格 */}
                     <div className="mb-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        性格
-                      </h3>
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Smile className="w-5 h-5 text-yellow-500" />
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          性格
+                        </h3>
+                      </div>
                       <p className="text-gray-700 leading-relaxed">
                         {selectedMember.personality}
                       </p>
@@ -206,7 +208,7 @@ const MembersPage = () => {
                           趣味
                         </h3>
                       </div>
-                      <p className="text-gray-700">
+                      <p className="text-gray-700 leading-relaxed">
                         {selectedMember.hobbies}
                       </p>
                     </div>
@@ -217,7 +219,7 @@ const MembersPage = () => {
                         イメージカラー
                       </h3>
                       <div className="flex items-center space-x-4">
-                        <div 
+                        <div
                           className="w-12 h-12 rounded-full border-2 border-gray-200 shadow-sm"
                           style={{ backgroundColor: selectedMember.image_color }}
                         />
@@ -226,7 +228,7 @@ const MembersPage = () => {
                             {selectedMember.image_color}
                           </p>
                           <p className="text-sm text-gray-500">
-                            {selectedMember.name}の専用カラー
+                            {selectedMember.name}のメンバーカラー
                           </p>
                         </div>
                       </div>
